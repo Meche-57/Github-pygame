@@ -38,6 +38,9 @@ fire = pygame.image.load('fire.png').convert_alpha()#removing alpha values and m
 player = pygame.image.load('player_walk1.png').convert_alpha()
 cave = pygame.image.load('cave.png').convert()
 dirt = pygame.image.load('dirt2.png').convert()
+coin = pygame.image.load('coin.png').convert()
+coin_e = pygame.transform.scale(coin,(40,40))
+fire_e = pygame.transform.scale(fire,(65,65)) #lenghth and width 
 
 # not needed anymore as we are using rect to simplify 
 #fire_x_pos = 525
@@ -48,18 +51,21 @@ dirt = pygame.image.load('dirt2.png').convert()
 # rectangle 
 
 player_rect = player.get_rect(midbottom = (20,0)) # adding rec around the surface # coordinate of rec too
-fire_rect = fire.get_rect(bottomright= (660,320))
+fire_rect = fire.get_rect(bottomright= (660,350))
 score_rect = score.get_rect(topleft = (10,10))
 timer_rect = timer.get_rect(topleft=(400,10))
 over_rect = Over.get_rect(topleft = (105,0))
 play_again_rect = play_again.get_rect(topleft =(160,90))
 yes_rect = yes.get_rect(topleft=(270,180))
 no_rect = no.get_rect(topleft=(272,250))
+coin_rect = coin.get_rect(topleft = (100,140))
 player_gravity =  0
 
 run = True
 menu = False
 game_start = True
+
+
 
 
 while run:
@@ -73,45 +79,46 @@ while run:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            fire_rect.left = 600
+            player_rect.left = 0
+            game_start = True
+            start_time = int(pygame.time.get_ticks()/ 1000)
 
+       
     
 
-    #if game_start: # makes avatar smoother if i place if statement here???
-        
-    if game_start:
+    if game_start: # makes avatar smoother if i place if statement here???
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP and player_rect.bottom >= 300: #to check if player is on ground
                 player_gravity = -15 # jumping illusion
-                player_rect.x += 2
+                player_rect.x += 10
             if event.key == pygame.K_RIGHT:
-                player_rect.x += 20
+                player_rect.x += 10
             if event.key == pygame.K_LEFT:
-                player_rect.x -= 20
-    
-        else:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                fire_rect.left = 600
-                player_rect.left = 0
-                game_start = True
-                start_time = int(pygame.time.get_ticks()/ 1000)
-    
+                player_rect.x -= 10
 
-    
+        
+            
     if game_start:
         window.blit(cave,(0,0))
         window.blit(dirt,(0,280))
         window.blit(score,score_rect)
         window.blit(timer,timer_rect)
+        window.blit(player,player_rect)
+        window.blit(coin_e,coin_rect)
         game_timer()
+       
         
         # fire 
         fire_rect.left -= 2
         if fire_rect.left <= -100:
             fire_rect.left = 600 # is the screen
-        window.blit(fire,fire_rect)
+        window.blit(fire_e,fire_rect)
         
         
-        player_gravity += 1 # increases gravity 
+        player_gravity += 1  
         player_rect.y += player_gravity
         if player_rect.bottom >= 300:
             player_rect.bottom = 300
@@ -132,6 +139,8 @@ while run:
         window.blit(play_again, play_again_rect)
         window.blit(yes,yes_rect)
         window.blit(no,no_rect)
+        
+
 
 
 
@@ -150,3 +159,15 @@ while run:
     pygame.display.update()
     clock.tick(60)
 
+
+
+
+# WHAT TO DO NEXT:
+# modify size of fire_rect, probably modisize the players rect too
+# add image of coin and if player collide with coin score_count = +1 
+# learn how to do sprites to join the rect and surface into one class 
+# spawn multiple fires using sprite 
+#  work on animation for player using sprite
+
+
+#updating of player .. player needs to touch the ground and the move again..otherwise it moves in the air in arrow pressed
