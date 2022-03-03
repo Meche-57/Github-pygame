@@ -3,6 +3,7 @@ import sys
 import time
 
 
+
 #window 
 
 pygame.init()
@@ -15,7 +16,7 @@ pygame.display.set_caption('Runner')
 def game_timer():
     time = int(pygame.time.get_ticks()/1000) - start_time
     time_surf = font.render(f'{time}', False,'white')
-    time_rect = time_surf.get_rect(topleft =(525,10))
+    time_rect = time_surf.get_rect(topleft =(300,10))
     window.blit(time_surf,time_rect)
 
 
@@ -31,7 +32,6 @@ font4 = pygame.font.Font(None, 40)
 
 
 
-
 #surface                                                                             
 score = font.render('score:',False,'white')
 timer = font.render('Time:',False,'white')
@@ -43,8 +43,9 @@ fire = pygame.image.load('fire.png').convert_alpha()#removing alpha values and m
 player = pygame.image.load('player_1.png').convert_alpha()
 cave = pygame.image.load('cave.png').convert()
 dirt = pygame.image.load('dirt2.png').convert()
-
-
+heart = pygame.image.load('heart.png').convert()
+heart_2 = pygame.image.load('heart.png').convert()
+heart_3 = pygame.image.load('heart.png').convert()
 
 
 
@@ -61,11 +62,18 @@ player_height = 75
 player_rect = player.get_rect(bottomleft= (0,0))# adding rec around the surface # coordinate of rec too
 fire_rect = fire.get_rect(bottomright= (0,280))
 score_rect = score.get_rect(topleft = (10,10))
-timer_rect = timer.get_rect(topleft=(400,10))
+timer_rect = timer.get_rect(topleft=(200,10))
 over_rect = Over.get_rect(topleft = (105,0))
 play_again_rect = play_again.get_rect(topleft =(160,90))
 yes_rect = yes.get_rect(topleft=(270,180))
 no_rect = no.get_rect(topleft=(272,250))
+heart_rect = heart.get_rect(topleft=(400,10))
+heart_rect2 = heart.get_rect(topleft=(450,10))
+heart_rect3 = heart.get_rect(topleft=(500,10))
+
+heart_e = pygame.transform.scale(heart,(40,40))
+heart_e2 = pygame.transform.scale(heart,(40,40))
+heart_e3 = pygame.transform.scale(heart,(40,40))
 
 player_gravity =  0
 
@@ -103,7 +111,7 @@ while run:
         
         
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            print("RESET")
+            print("RESETTED")
             fire_rect.left = 600
             player_rect.left = 0
             
@@ -118,7 +126,7 @@ while run:
             ]
 
 
-            for c in coins_rect: # for ever column / row in the list
+            for c in coins_rect: # for everY column / row in the list
                 window.blit(coin_e,(c[0],c[1]))
     
             
@@ -144,6 +152,9 @@ while run:
         window.blit(score,score_rect)
         window.blit(timer,timer_rect)
         window.blit(player,player_rect)
+        window.blit(heart_e,heart_rect)
+        window.blit(heart_e2,heart_rect2)
+        window.blit(heart_e3,heart_rect3)
         
         
         game_timer()
@@ -221,7 +232,8 @@ while run:
 # add image of coin and if player collide with coin score_count ___________________________DONE
 # reset function 
 
-
+ 
+ #iteration 2 
 # learn how to do sprites to join the rect and surface into one class 
 # spawn multiple fires using sprite 
 #  work on animation for player using sprite
