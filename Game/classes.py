@@ -1,55 +1,50 @@
+
 import pygame
 import sys
 
 pygame.font.init()
+clock = pygame.time.Clock()
+start_time = 0 
 
 # timer 
 
 def game_timer():
     time = int(pygame.time.get_ticks()/1000) - start_time
-    time_surf = font.render(f'{time}', False,'white')
+    time_surf = font_Timer.render(f'{time}', False,'white')
     time_rect = time_surf.get_rect(topleft =(750,10))
     screen.blit(time_surf,time_rect)
 
 
-font = pygame.font.Font(None, 30)
-
-timer = font.render('Time:',False,'white')
+font = pygame.font.Font(None, 100)
+font_Timer= pygame.font.Font(None, 50)
+timer = font_Timer.render('Time:',False,'white')
 timer_rect = timer.get_rect(topright=(700,10))
 
- 
-
-
-clock = pygame.time.Clock()
-start_time = 0 
 
 #screen stuff
 platform_set_up = [
 '                        ', # 0
 '                        ', # 1
-'                  C     ', # 2
-'          C              ', # 3
-'                  B     ', # 4
+'                      ', # 2
+'                 B    ', # 3
+'           C          ', # 4
 '          B             ', # 5
-'                        ', # 6 
+'       C                  ', # 6 
 '     BB       B         ', # 7
 '    B                  ', # 8 
-' B       C               ', # 9 
-'   BBBBBBBB  BBBBB',
-'                        ',]# 10
+' B          C      C         ', # 9 
+'  BBBBBBBB  BBBBB BB' , ]# 10
 
 
-tile_size = 64
-coin_size = 10
+tile_size = 55
+coin_size = 50
 
 
 SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = len(platform_set_up)*tile_size
-
-
+SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))       
-
 background = pygame.transform.scale(pygame.image.load("cave.jpg"),(SCREEN_WIDTH,SCREEN_HEIGHT))
+
 
 
 
@@ -57,35 +52,29 @@ class Block(pygame.sprite.Sprite):
     def __init__(self,pos,size):
         super().__init__()
         self.image = pygame.Surface((size,size))
-        block_img = pygame.image.load('dirt.png').convert()
         self.image.fill('white')
-        #self.image.append(block_img)
+  
         self.rect = self.image.get_rect(topright = pos)
 
-block = pygame.sprite.Group(Block((250,275),104))
 
-#class Coin(pygame.sprite.Sprite):
-    #def __init__(self,pos,size):
-        #super().__init__()
-        #self.image = pygame.Surface((size,size))
-        #coin_img = pygame.image.load('dirt.png').convert()
-        #self.image.fill('yellow')
-        #self.image.append(block_img)
-        #self.rect = self.image.get_rect(topright = pos)
+class Coin(pygame.sprite.Sprite):
+    def __init__(self,pos,size):
+        super().__init__()
+        self.image = pygame.Surface((size,size))
+        self.image.fill('yellow')
+        self.rect = self.image.get_rect(topright = pos)
 
-#coin = pygame.sprite.Group((Coin(250,275),184))        
-
-
-  
 
 class Level:
 
-    def __init__(self, level_data ,surface):
+    def __init__(self, platform_data ,surface):
         self.display_surface = surface
-        self.setup_level(level_data)
+        self.setup_level(platform_data)
     
     def setup_level(self,setup):
+        
         self.blocks = pygame.sprite.Group()
+        self.coins = pygame.sprite.Group()
        
         
         for row_index ,row in enumerate(setup): #what row we have and where it is
@@ -96,29 +85,39 @@ class Level:
                     block = Block((x,y),tile_size)
                 
                     self.blocks.add(block)
-                #if col == 'B':
-                    #x = col_index * coin_size
-                    #y = row_index * coin_size
-                    #coin = Coin((x,y),tile_size)
+                
+                if col == 'C':
+                    x = col_index * coin_size
+                    y = row_index * coin_size
+                    coin = Coin((x,y),coin_size)
 
-                    #self.coin.add(coin)  
-                #print(f'{row_index},{col_index}:{col}')  shows the coordinates of where EACH OF B in platform_set_up are located
+                    self.coins.add(coin)
+
+
+        
+                #print(f'{row_index},{col_index}:{col}')  #shows the coordinates of where EACH OF B in platform_set_up are located
 
     
     def run(self):
         self.blocks.draw(self.display_surface)
+        self.coins.draw(self.display_surface)
 
 #Player 
 
-level = Level(platform_set_up,screen) # platform set up is the surface and becomes the level_data
+level = Level(platform_set_up,screen) # platform set up is the surface and becomes the platform_data
 
 class Player(pygame.sprite.Sprite):
+
+    
+
 
     def __init__(self, pos_x,pos_y):
         super().__init__()
         self.is_animating = True
         self.is_animating_2 = True
         self.is_animating_3 = True 
+        pos_x = 0
+        pos_y = 500
         self.sprite_R = []
         self.sprite_L = []
         self.sprite_A = []
@@ -132,9 +131,11 @@ class Player(pygame.sprite.Sprite):
         self.image = self.sprite_R[self.current_sprite_R]
 
         self.sprite_L.append(pygame.image.load('player_0-1.png'))
-        self.sprite_L.append(pygame.image.load('player_0-2.png'))
         self.sprite_L.append(pygame.image.load('player_0-3.png'))
-        self.sprite_L.append(pygame.image.load('player_0-4.png'))
+        self.sprite_L.append(pygame.image.load('player_0-1.png'))
+        self.sprite_L.append(pygame.image.load('player_0-3.png'))
+       
+        
 
         self.current_sprite_L = 0
         self.image = self.sprite_L[self.current_sprite_L]
@@ -149,13 +150,14 @@ class Player(pygame.sprite.Sprite):
         self.image = self.sprite_A[self.current_sprite_A]
 
 
-        pos_x = 300
-        pos_y = 300
+        
         self.rect = self.image.get_rect() 
         self.rect.bottomleft = [pos_x,pos_y]
     
     def animate(self):
         self.is_animating = True
+        
+        
 
     def animate_2(self):
         self.is_animating_2 = True
@@ -167,6 +169,8 @@ class Player(pygame.sprite.Sprite):
         
         if self.is_animating == True:
             self.current_sprite_R += 0.1 # how fast each frame
+            self.rect.right += 1
+            
         
             if self.current_sprite_R >= len(self.sprite_R):
                 self.current_sprite_R = 0
@@ -176,6 +180,8 @@ class Player(pygame.sprite.Sprite):
 
         if self.is_animating_2 == True:
             self.current_sprite_L += 0.1
+            self.rect.left -= 1
+            
             
             if self.current_sprite_L >= len(self.sprite_L):
                 self.current_sprite_L = 0
@@ -192,8 +198,6 @@ class Player(pygame.sprite.Sprite):
 
             self.image = self.sprite_A[int(self.current_sprite_A)]   
 
-
-
 player_sprite = pygame.sprite.Group()
 player = Player(0,575)
 player_sprite.add(player)
@@ -209,84 +213,108 @@ class Fireball(pygame.sprite.Sprite):# sprite is a rect and surf in one class
         self.x = 750
         self.y = 450
     
-    def movement(self):
-
-        self.x -= 2
         
-        #self.poof = pygame.mixer.Sound("poof.wav")
+        
 
 fire_ball= Fireball()
 fire_ball_g = pygame.sprite.Group()
 fire_ball_g.add(fire_ball)
 
 
-#multiple fireballs 
-#mult_fireball = pygame.sprite.Group()
-
-#for fire in range(5):
-    #fireballs = Fireball('fire.png',random.randrange(0,screen_width),random.randrange(0,screen_height))
-    #mult_fireball.add(fireballs)
 
 
-
+control = 3
+start = 2
+menu = 1
 # Coins
 
-class Coins(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load('coin.png')
-        self.rect = self.image.get_rect(topright =(150,275))
-        
-        
+start_back = pygame.transform.scale(pygame.image.load('start_back.png'),(SCREEN_WIDTH,SCREEN_HEIGHT))
+control_back = pygame.transform.scale(pygame.image.load('control.png'),(SCREEN_WIDTH,SCREEN_HEIGHT))
 
-coin = Coins()
-coin_g = pygame.sprite.Group()
-coin_g.add(coin)
 
-def reset():
-    
-    screen.blit(background,(0,0))
-    screen.blit(timer,timer_rect)
-    game_timer()
-    #mult_fireball.draw(screen)
-    fire_ball_g.draw(screen) # screen.blit doesnt work on sprites
-    
-    
-    player_sprite.draw(screen)
-    player.update(0.5)
-    level.run()
-    
 
-    coin_g.draw(screen)
-    
-   
-    pygame.display.update()
 
-        
-player_vel = 4
 
-while True:
 
-    reset()
+
+
+
+while menu != start:
+
+    game_start = font.render('START GAME',False,'White') 
+    game_start_rect= game_start.get_rect(topleft = (260,90))
+    screen.blit(start_back,(0,0))
+    screen.blit(game_start,game_start_rect)
+
+    Control = font.render('Controls',False,'White')
+    control_rect = Control.get_rect(topleft = (265,230))
+    Exit = font.render('Exit',False,'White')
+    Exit_rect = Control.get_rect(topleft = (260,370))
+    screen.blit(Control,control_rect)
+    screen.blit(Exit,Exit_rect)
     
     
     for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
-                player.animate()
-
-            if event.key == pygame.K_LEFT:
-                player.animate_2()
-            if event.key == pygame.K_UP:
-                print("Up")
-            
-            if event.key == pygame.K_e:
-                player.animate_3()
-                print("attack")
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit
+                
+        if event.type ==  pygame.MOUSEBUTTONDOWN:
+            mouse_pos = pygame.mouse.get_pos()
+            if control_rect.collidepoint(mouse_pos):
+                menu == control
+                screen.blit(control_back,(0,0))
+            
+            if Exit_rect.collidepoint(mouse_pos):
+                menu == pygame.quit()
+        
+            if game_start_rect.collidepoint(mouse_pos):
+                menu == start
+            
+            
+                
+
+               
+                
+                while start:
+
+                    screen.blit(background,(0,0))
+                    screen.blit(timer,timer_rect)
+                    game_timer()
+                    #mult_fireball.draw(screen)
+                   
+
+
+                    player_sprite.draw(screen)
+                    player.update(10)
+                    level.run()
+                    fire_ball_g.draw(screen) # screen.blit doesnt work on sprites
+                    pygame.display.update()
+                    clock.tick(60)
+
+
+
+
+
+
+
+                    for event in pygame.event.get():
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_RIGHT:
+                                player.animate()
+
+                            if event.key == pygame.K_LEFT:
+                                player.animate_2()
+                            if event.key == pygame.K_UP:
+                                print("Up")
+                            
+                            if event.key == pygame.K_e:
+                                player.animate_3()
+                                print("attack")
+                        if event.type == pygame.QUIT:
+                            pygame.quit()
+                            sys.exit
+                
+        pygame.display.update()
+        
     
-    
-    
-    clock.tick(100)
