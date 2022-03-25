@@ -38,9 +38,9 @@ timer = font.render('Time:',False,'white')
 Over = font2.render('Game Over',False,'white')     # text information , false, colour
 play_again = font3.render('Play Again?',False,'white') 
 no= font4.render('No',False,'dark blue')
-yes = font4.render('Yes(space for now)',False,'dark green')
+yes = font4.render('Yes(press space)',False,'dark green')
 fire = pygame.image.load('fire.png').convert_alpha()#removing alpha values and making the game run smoother as its easier for pygame to manage 
-player = pygame.image.load('player_1.png').convert_alpha()
+player = pygame.image.load('player_0-1.png').convert_alpha()
 cave = pygame.image.load('cave.png').convert()
 dirt = pygame.image.load('dirt2.png').convert()
 heart = pygame.image.load('heart.png').convert()
@@ -155,9 +155,22 @@ while run:
         window.blit(heart_e,heart_rect)
         window.blit(heart_e2,heart_rect2)
         window.blit(heart_e3,heart_rect3)
+
+        coins_rect = [
+            pygame.Rect(150,100,60,60),
+            pygame.Rect(50,100,60,60),
+            pygame.Rect(200,100,60,60)
+            ]
+            
+        for c in coins_rect: # for everY column / row in the list
+            window.blit(coin_e,(c[0],c[1]))
+    
+            
+
+    
         
         
-        game_timer()
+        #game_timer()
         
         for c in coins_rect: # for ever column / row in the list
             window.blit(coin_e,(c[0],c[1]))
@@ -196,7 +209,7 @@ while run:
     
     
     else:
-        #game over screen soon
+        #game over screen 
       
         window.fill('black')
         
@@ -204,20 +217,6 @@ while run:
         window.blit(play_again, play_again_rect)
         window.blit(yes,yes_rect)
         window.blit(no,no_rect)
-        
-
-
-
-
-
-
-        
-            
-            
-        
-        
-    
-    
 
 
 

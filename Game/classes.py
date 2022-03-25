@@ -4,128 +4,186 @@ import sys
 
 pygame.font.init()
 clock = pygame.time.Clock()
-start_time = 0 
+ 
+
+font = pygame.font.Font(None, 100)
+font_Timer= pygame.font.Font(None, 50)
 
 # timer 
 
 def game_timer():
+
+    start_time = 0
     time = int(pygame.time.get_ticks()/1000) - start_time
     time_surf = font_Timer.render(f'{time}', False,'white')
-    time_rect = time_surf.get_rect(topleft =(750,10))
+    time_rect = time_surf.get_rect(topleft =(850,10))
+    timer_surf = font_Timer.render('Time:',False,'white')
+    timer_rect = timer_surf.get_rect(topleft=(650,10))
+    screen.blit(timer_surf,timer_rect)
     screen.blit(time_surf,time_rect)
 
 
-font = pygame.font.Font(None, 100)
-font_Timer= pygame.font.Font(None, 50)
-timer = font_Timer.render('Time:',False,'white')
-timer_rect = timer.get_rect(topright=(700,10))
-
-
-#screen stuff
-platform_set_up = [
-'                        ', # 0
-'                        ', # 1
-'                      ', # 2
-'                 B    ', # 3
-'           C          ', # 4
-'          B             ', # 5
-'       C                  ', # 6 
-'     BB       B         ', # 7
-'    B                  ', # 8 
-' B          C      C         ', # 9 
-'  BBBBBBBB  BBBBB BB' , ]# 10
-
-
-tile_size = 55
+tile_size = 50
 coin_size = 50
-
-
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))       
 background = pygame.transform.scale(pygame.image.load("cave.jpg"),(SCREEN_WIDTH,SCREEN_HEIGHT))
 
 
+heart = pygame.image.load('heart.png')
+heart_2 = pygame.image.load('heart.png')
+heart_3 = pygame.image.load('heart.png')
+heart_e = pygame.transform.scale(heart,(40,40))
+heart_e2 = pygame.transform.scale(heart_2,(40,40))
+heart_e3 = pygame.transform.scale(heart_3,(40,40))
+heart_rect = heart_e.get_rect(topleft=(0,10))
+heart_rect2 = heart_e2.get_rect(topleft=(50,10))
+heart_rect3 = heart_e3.get_rect(topleft=(100,10))
 
-
-class Block(pygame.sprite.Sprite):
-    def __init__(self,pos,size):
-        super().__init__()
-        self.image = pygame.Surface((size,size))
-        self.image.fill('white')
-  
-        self.rect = self.image.get_rect(topright = pos)
 
 
 class Coin(pygame.sprite.Sprite):
-    def __init__(self,pos,size):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('coin.png')
+        self.rect = self.image.get_rect()
+        self.rect.topright = (x,y)
+    
+
+class Fireball(pygame.sprite.Sprite):
+    def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.Surface((size,size))
-        self.image.fill('yellow')
-        self.rect = self.image.get_rect(topright = pos)
-
-
-class Level:
-
-    def __init__(self, platform_data ,surface):
-        self.display_surface = surface
-        self.setup_level(platform_data)
-    
-    def setup_level(self,setup):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load('fire.png')
+        self.rect = self.image.get_rect()
         
-        self.blocks = pygame.sprite.Group()
-        self.coins = pygame.sprite.Group()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_l = -10
+        
+        
+    def update(self):
+        self.rect.x += self.move_l
+
+        if self.rect.x <= -450:
+            print(self.rect.x)
+            self.rect.x = 2000
+
+        
+
+    
        
-        
-        for row_index ,row in enumerate(setup): #what row we have and where it is
-            for col_index,col in enumerate(row): 
-                if col == 'B':
-                    x = col_index * tile_size
-                    y = row_index * tile_size
-                    block = Block((x,y),tile_size)
-                
-                    self.blocks.add(block)
-                
-                if col == 'C':
-                    x = col_index * coin_size
-                    y = row_index * coin_size
-                    coin = Coin((x,y),coin_size)
-
-                    self.coins.add(coin)
+coin_group = pygame.sprite.Group()
+fireball_g = pygame.sprite.Group()
 
 
-        
-                #print(f'{row_index},{col_index}:{col}')  #shows the coordinates of where EACH OF B in platform_set_up are located
-
+level_data = [
+    '                        ', # 0
+    '                        ', # 1
+    '            C  C      E  ', # 2
+    '               B    ', # 3
+    '        C               ', # 4
+    '          B      E   C  ', # 5
+    '       B    B        E         ', # 6 
+    '  C     B        B     E ', # 7
+    '     B           E  ', # 8 
+    'C                  E      ', # 9 
+    'B BBBBBBB BBBB  BBBBB BB' , ]# 10
     
-    def run(self):
-        self.blocks.draw(self.display_surface)
-        self.coins.draw(self.display_surface)
+
+class Level():
+    
+
+    def __init__(self, level_data):
+        self.block_list = []
+        
+
+        grass_img = pygame.image.load('dirt.png')
+
+        row_count = 0
+        for row in level_data:
+            col_count = 0
+            for tile in row:
+                if tile == 'C':
+                    coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
+                    coin_group.add(coin)
+                
+              
+
+
+                    
+                
+                if tile == 'B':
+                    img = pygame.transform.scale(grass_img, (tile_size, tile_size))
+                    img_rect = img.get_rect()
+                    img_rect.x = col_count * tile_size
+                    img_rect.y = row_count * tile_size
+                    tile = (img, img_rect)
+                    self.block_list.append(tile)
+                
+                if tile == 'E':
+                    fireball = Fireball(col_count * tile_size,row_count * tile_size + 20)
+                    fireball_g.add(fireball)
+
+
+                col_count += 1
+            row_count += 1
+
+    def draw(self,):
+        
+        for tile in self.block_list:
+                screen.blit(tile[0], tile[1])
+                
+                
+                
+                
+    
 
 #Player 
 
-level = Level(platform_set_up,screen) # platform set up is the surface and becomes the platform_data
+world = Level(level_data) # platform set up is the surface and becomes the platform_data
+
+
+
+
+
 
 class Player(pygame.sprite.Sprite):
 
-    
 
-
-    def __init__(self, pos_x,pos_y):
+    def __init__(self, x,y):
         super().__init__()
-        self.is_animating = True
-        self.is_animating_2 = True
-        self.is_animating_3 = True 
-        pos_x = 0
-        pos_y = 500
+        self.is_animating_RIGHT = True
+        self.is_animating_LEFT = True
+        self.is_animating_ATTACK = True
+        self.is_animating_UP = True
+
+        self.jump = False
+        self.gravity = 0 
+        
+       
+        x = 0
+        y = 0
+       
+        
         self.sprite_R = []
         self.sprite_L = []
         self.sprite_A = []
+        self.sprite_U = []
 
-        self.sprite_R.append(pygame.image.load('player_0.png'))
-        self.sprite_R.append(pygame.image.load('player_1.png'))
-        self.sprite_R.append(pygame.image.load('player_2.png'))
-        self.sprite_R.append(pygame.image.load('player_3.png'))
+        self.sprite_U.append(pygame.image.load('player_0-4-1u.png'))
+        self.sprite_U.append(pygame.image.load('player_0-4-2u.png'))
+        self.sprite_U.append(pygame.image.load('player_0-4-3u.png'))
+        self.sprite_U.append(pygame.image.load('player_0-4-4u.png'))
+
+        self.current_sprite_U = 0
+        self.image = self.sprite_U[self.current_sprite_U]
+
+        self.sprite_R.append(pygame.image.load('player_1-1.png'))
+        self.sprite_R.append(pygame.image.load('player_1-2.png'))
+        self.sprite_R.append(pygame.image.load('player_1-3.png'))
+        self.sprite_R.append(pygame.image.load('player_1-4.png'))
 
         self.current_sprite_R = 0
         self.image = self.sprite_R[self.current_sprite_R]
@@ -150,82 +208,127 @@ class Player(pygame.sprite.Sprite):
         self.image = self.sprite_A[self.current_sprite_A]
 
 
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
         
-        self.rect = self.image.get_rect() 
-        self.rect.bottomleft = [pos_x,pos_y]
     
-    def animate(self):
-        self.is_animating = True
-        
+    def animate_RIGHT(self):
+        self.is_animating_RIGHT = True
+    
+    def animate_UP(self):
+        self.is_animating_UP = True
         
 
-    def animate_2(self):
-        self.is_animating_2 = True
+    def animate_LEFT(self):
+        self.is_animating_LEFT = True
         
-    def animate_3(self):
-        self.is_animating_3  = True
+    def animate_ATTACK(self):
+        self.is_animating_ATTACK  = True
+    
+    
 
-    def update(self,speed):
+    def movement(self,speed):
+        movement_x = 0
+        movement_y = 0
         
-        if self.is_animating == True:
+        if self.is_animating_RIGHT == True:
             self.current_sprite_R += 0.1 # how fast each frame
-            self.rect.right += 1
             
-        
             if self.current_sprite_R >= len(self.sprite_R):
                 self.current_sprite_R = 0
-                self.is_animating = False # when the list of images have all been displayed it stops 
+                self.is_animating_RIGHT = False # when the list of images have all been displayed it stops 
             
             self.image = self.sprite_R[int(self.current_sprite_R)]
+        
+        if self.is_animating_UP == True:
+            self.current_sprite_U += 0.1
+            
 
-        if self.is_animating_2 == True:
+        if self.is_animating_LEFT == True:
             self.current_sprite_L += 0.1
-            self.rect.left -= 1
-            
-            
+          
             if self.current_sprite_L >= len(self.sprite_L):
                 self.current_sprite_L = 0
-                self.is_animating_2 = False
+                self.is_animating_LEFT = False
             
             self.image = self.sprite_L[int(self.current_sprite_L)]
 
-        if self.is_animating_3 == True:
-            self.current_sprite_A += 0.2
+        if self.is_animating_ATTACK == True:
+            self.current_sprite_A += 0.1
 
             if self.current_sprite_A >= len(self.sprite_A):
                 self.current_sprite_A = 0 
-                self.is_animating_3 = False
+                self.is_animating_ATTACK = False
 
-            self.image = self.sprite_A[int(self.current_sprite_A)]   
+            self.image = self.sprite_A[int(self.current_sprite_A)] 
+        
+        self.gravity += 1
+        if self.gravity > 10:
+            self.gravity = 10
+        movement_y += self.gravity
+
+        for tile in world.block_list:
+           
+            if tile[1].colliderect(self.rect.x + movement_x, self.rect.y, self.width, self.height):  #check for collision in x direction
+                movement_x = 0
+            
+            if tile[1].colliderect(self.rect.x, self.rect.y + movement_y, self.width, self.height):
+                movement_y = 0 #check for collision in y direction
+                
+                if self.gravity < 0:
+                    movement_y = tile[1].bottom - self.rect.top
+                    self.gravity = 1
+                
+                elif self.gravity >= 0:
+                    movement_y = tile[1].top - self.rect.bottom
+                    self.gravity = 0
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    player.animate_RIGHT()
+                    movement_x += 20
+
+                if event.key == pygame.K_LEFT:
+                    player.animate_LEFT()
+                    movement_x -= 20
+
+                if event.key == pygame.K_UP and self.jump == False:
+                     player.animate_UP()
+                     movement_y -= 20
+                     self.jump == True
+                
+                if event.key == pygame.K_UP:
+                    self.jump == False
+
+                if event.key == pygame.K_e:
+                    player.animate_ATTACK()
+                    print("attack") 
+                     
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit
+     
+     
+        self.rect.x += movement_x # updates both coordinates
+        self.rect.y += movement_y
+
+        if self.rect.y > 700:
+            self.rect.x = 40 
+            self.rect.y = 100
+    
+    
+
 
 player_sprite = pygame.sprite.Group()
 player = Player(0,575)
 player_sprite.add(player)
 
 
-# Fireball
 
-class Fireball(pygame.sprite.Sprite):# sprite is a rect and surf in one class
-    def __init__(self):
-        super().__init__()
-        self.image= pygame.image.load('fire.png')
-        self.rect = self.image.get_rect(bottomright = (750,450))
-        self.x = 750
-        self.y = 450
-    
-        
-        
-
-fire_ball= Fireball()
-fire_ball_g = pygame.sprite.Group()
-fire_ball_g.add(fire_ball)
-
-
-
-
-control = 3
-start = 2
-menu = 1
 # Coins
 
 start_back = pygame.transform.scale(pygame.image.load('start_back.png'),(SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -233,24 +336,36 @@ control_back = pygame.transform.scale(pygame.image.load('control.png'),(SCREEN_W
 
 
 
+Game_Over = font.render('Game Over',False,'white')
+Gameover_rect = Game_Over.get_rect(topleft = (300,240))
+
+
+menu = 1
+run_game = 2 
+control = 3
+
+
+lives = 3 
+
+score = font_Timer.render('score:',False,'white')
+score_rect = score.get_rect(bottomright = (790,590))
 
 
 
+while menu != run_game:
 
-
-
-while menu != start:
-
-    game_start = font.render('START GAME',False,'White') 
+    game_start = font.render('START GAME',False,'White')    #start Game displayed on window 
     game_start_rect= game_start.get_rect(topleft = (260,90))
     screen.blit(start_back,(0,0))
     screen.blit(game_start,game_start_rect)
 
-    Control = font.render('Controls',False,'White')
+    Control = font.render('Controls',False,'White')      #Controls Game displayed on window      
     control_rect = Control.get_rect(topleft = (265,230))
-    Exit = font.render('Exit',False,'White')
-    Exit_rect = Control.get_rect(topleft = (260,370))
     screen.blit(Control,control_rect)
+    
+    Exit = font.render('Exit',False,'White')           #Exit Game displayed on window 
+    Exit_rect = Control.get_rect(topleft = (260,370))
+    
     screen.blit(Exit,Exit_rect)
     
     
@@ -263,57 +378,97 @@ while menu != start:
             mouse_pos = pygame.mouse.get_pos()
             if control_rect.collidepoint(mouse_pos):
                 menu == control
-                screen.blit(control_back,(0,0))
+                screen.blit(control_back,(0,0))  # will display the controls menu 
             
             if Exit_rect.collidepoint(mouse_pos):
-                menu == pygame.quit()
+                menu == pygame.quit()             # when pressed the exit button the game closes 
         
             if game_start_rect.collidepoint(mouse_pos):
-                menu == start
+                menu == run_game
+                run_game = True                   # The run_game loop with start 
             
             
                 
 
                
                 
-                while start:
+                while run_game:
 
-                    screen.blit(background,(0,0))
-                    screen.blit(timer,timer_rect)
-                    game_timer()
-                    #mult_fireball.draw(screen)
+                    
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit
+
+                    points = 0
+                    points_surf = font_Timer.render(f'{points}', False , 'white')
+                    points_rect = points_surf.get_rect(bottomright = (850,590))
+                    
                    
 
-
+                    screen.blit(background,(0,0))
+                    game_timer()
+                    world.draw()
+                    screen.blit(score,score_rect)
+                    screen.blit(points_surf,points_rect)
                     player_sprite.draw(screen)
-                    player.update(10)
-                    level.run()
-                    fire_ball_g.draw(screen) # screen.blit doesnt work on sprites
+                    
+                    fireball_g.update()
+                    fireball_g.draw(screen)
+                    coin_group.draw(screen)
+                    player.movement(20)
+                    
+                   
+                    
+                 
+                    
+                    if pygame.sprite.spritecollide(player, coin_group, True):
+                        points = points + 1
+                        print(points)
+                       
+                        
+                    
+
+                    if lives ==  3:
+                        screen.blit(heart_e,heart_rect)
+                        screen.blit(heart_e2,heart_rect2)
+                        screen.blit(heart_e3,heart_rect3)
+
+
+
+                    if pygame.sprite.spritecollide(player, fireball_g, True):
+                        lives = lives - 1
+                        
+
+
+                    if lives == 2:
+                        screen.blit(heart_e2,heart_rect2)
+                        screen.blit(heart_e3,heart_rect3)
+
+                    if lives == 1:
+                        screen.blit(heart_e3,heart_rect3)
+
+                    if lives == 0: 
+                        run_game = False
+
+                
+        
+
+
+        
                     pygame.display.update()
                     clock.tick(60)
+                
+                else:
+                    
+                    
+                    #game over screen soon
+      
+                    screen.fill('black')
+                
+                    screen.blit(Game_Over,Gameover_rect)
+                    
 
-
-
-
-
-
-
-                    for event in pygame.event.get():
-                        if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_RIGHT:
-                                player.animate()
-
-                            if event.key == pygame.K_LEFT:
-                                player.animate_2()
-                            if event.key == pygame.K_UP:
-                                print("Up")
-                            
-                            if event.key == pygame.K_e:
-                                player.animate_3()
-                                print("attack")
-                        if event.type == pygame.QUIT:
-                            pygame.quit()
-                            sys.exit
+        
                 
         pygame.display.update()
         
