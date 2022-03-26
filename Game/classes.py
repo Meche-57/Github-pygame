@@ -9,6 +9,13 @@ clock = pygame.time.Clock()
 font = pygame.font.Font(None, 100)
 font_Timer= pygame.font.Font(None, 50)
 
+menu = 1
+run_game = 2 
+control = 3
+
+points = 0
+lives = 3 
+
 # timer 
 
 def game_timer():
@@ -23,8 +30,9 @@ def game_timer():
     screen.blit(time_surf,time_rect)
 
 
-tile_size = 50
+block_size = 50
 coin_size = 50
+fireball_size = 50
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))       
@@ -49,7 +57,11 @@ class Coin(pygame.sprite.Sprite):
         self.image = pygame.image.load('coin.png')
         self.rect = self.image.get_rect()
         self.rect.topright = (x,y)
-    
+
+coin_group = pygame.sprite.Group() 
+
+
+
 
 class Fireball(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -60,21 +72,17 @@ class Fireball(pygame.sprite.Sprite):
         
         self.rect.x = x
         self.rect.y = y
-        self.move_l = -10
+        self.speed_l = -10
         
         
     def update(self):
-        self.rect.x += self.move_l
+        self.rect.x += self.speed_l # makes fireball move to left
 
-        if self.rect.x <= -450:
-            print(self.rect.x)
-            self.rect.x = 2000
+        if self.rect.x <= -450: # when fireball goes off grid 
+            print(self.rect.x) #shows location
+            self.rect.x = 2000 # respawns back to location 2000 which is at the far right 
 
-        
-
-    
-       
-coin_group = pygame.sprite.Group()
+         
 fireball_g = pygame.sprite.Group()
 
 
@@ -86,10 +94,10 @@ level_data = [
     '        C               ', # 4
     '          B      E   C  ', # 5
     '       B    B        E         ', # 6 
-    '  C     B        B     E ', # 7
-    '     B           E  ', # 8 
+    '  C  B   B        B     E ', # 7
+    '                E  ', # 8 
     'C                  E      ', # 9 
-    'B BBBBBBB BBBB  BBBBB BB' , ]# 10
+    'B BBBBBBB BBBB  BBBBB BB' , ]# 10       # layout of level
     
 
 class Level():
@@ -98,51 +106,41 @@ class Level():
     def __init__(self, level_data):
         self.block_list = []
         
-
-        grass_img = pygame.image.load('dirt.png')
-
-        row_count = 0
+        row_count = 0 # location of row in block_list
         for row in level_data:
             col_count = 0
-            for tile in row:
-                if tile == 'C':
-                    coin = Coin(col_count * tile_size + (tile_size // 2), row_count * tile_size + (tile_size // 2))
+            for object in row:
+                if object == 'C':
+                    coin = Coin(col_count * coin_size , row_count * coin_size ) # coin x,y corresponding to col and row value
                     coin_group.add(coin)
                 
               
+                if object == 'B': 
+                    dirt_surf = pygame.image.load('dirt.png')
+                    dirt_rect = dirt_surf.get_rect()
+                    dirt_rect.x = col_count * block_size
+                    dirt_rect.y = row_count * block_size
+                    block = (dirt_surf, dirt_rect)
+                    self.block_list.append(block) 
 
-
-                    
+                    # if i added a class it would dissapear when the player collides with it so i created the block here
                 
-                if tile == 'B':
-                    img = pygame.transform.scale(grass_img, (tile_size, tile_size))
-                    img_rect = img.get_rect()
-                    img_rect.x = col_count * tile_size
-                    img_rect.y = row_count * tile_size
-                    tile = (img, img_rect)
-                    self.block_list.append(tile)
-                
-                if tile == 'E':
-                    fireball = Fireball(col_count * tile_size,row_count * tile_size + 20)
+                if object == 'E':
+                    fireball = Fireball(col_count * fireball_size, row_count * fireball_size) # block x,y corresponding to col and row value
                     fireball_g.add(fireball)
 
 
-                col_count += 1
-            row_count += 1
+                col_count += 1 
+            row_count += 1 
 
     def draw(self,):
         
-        for tile in self.block_list:
-                screen.blit(tile[0], tile[1])
+        for object in self.block_list:
+                screen.blit(object[0], object[1]) # draw the list onto screen 
                 
                 
-                
-                
-    
 
-#Player 
-
-world = Level(level_data) # platform set up is the surface and becomes the platform_data
+level_1 = Level(level_data) # platform set up is the surface and becomes the platform_data
 
 
 
@@ -154,23 +152,20 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, x,y):
         super().__init__()
-        self.is_animating_RIGHT = True
-        self.is_animating_LEFT = True
+        self.is_animating_RIGHT = True # attribute for each animation in which is then further on used 
+        self.is_animating_LEFT = True  # without them player wouldnt have any attributes 
         self.is_animating_ATTACK = True
         self.is_animating_UP = True
+        
 
-        self.jump = False
-        self.gravity = 0 
         
-       
-        x = 0
-        y = 0
-       
+        self.gravity = 0 # creates an attribute for gravity 
         
-        self.sprite_R = []
-        self.sprite_L = []
-        self.sprite_A = []
-        self.sprite_U = []
+        
+        self.sprite_R = [] # Right list
+        self.sprite_L = [] # where images are going to appended and stored - LEFT
+        self.sprite_A = [] # Attack list
+        self.sprite_U = [] # attack list
 
         self.sprite_U.append(pygame.image.load('player_0-4-1u.png'))
         self.sprite_U.append(pygame.image.load('player_0-4-2u.png'))
@@ -178,7 +173,7 @@ class Player(pygame.sprite.Sprite):
         self.sprite_U.append(pygame.image.load('player_0-4-4u.png'))
 
         self.current_sprite_U = 0
-        self.image = self.sprite_U[self.current_sprite_U]
+        self.image = self.sprite_U[self.current_sprite_U] 
 
         self.sprite_R.append(pygame.image.load('player_1-1.png'))
         self.sprite_R.append(pygame.image.load('player_1-2.png'))
@@ -194,7 +189,6 @@ class Player(pygame.sprite.Sprite):
         self.sprite_L.append(pygame.image.load('player_0-3.png'))
        
         
-
         self.current_sprite_L = 0
         self.image = self.sprite_L[self.current_sprite_L]
 
@@ -211,22 +205,24 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
+        self.width = self.image.get_width() # of the images when going left and colliding with a block platform
+        self.height = self.image.get_height() # of the images so futher on when player colliding with blocks when it jumps up it wouldnt go straight through the block
         
     
     def animate_RIGHT(self):
-        self.is_animating_RIGHT = True
+        self.is_animating_RIGHT = True # THIS METHOD GETS CALLED WHEN CORRESPONDING KEY 
     
     def animate_UP(self):
-        self.is_animating_UP = True
+        self.is_animating_UP = True # THIS METHOD GETS CALLED WHEN CORRESPONDING KEY 
         
 
     def animate_LEFT(self):
-        self.is_animating_LEFT = True
+        self.is_animating_LEFT = True # THIS METHOD GETS CALLED WHEN CORRESPONDING KEY 
         
     def animate_ATTACK(self):
-        self.is_animating_ATTACK  = True
+        self.is_animating_ATTACK  = True # THIS METHOD GETS CALLED WHEN CORRESPONDING KEY 
+    
+    
     
     
 
@@ -234,17 +230,31 @@ class Player(pygame.sprite.Sprite):
         movement_x = 0
         movement_y = 0
         
+        self.gravity += 1
+        if self.gravity > 10:
+            self.gravity = 15
+        movement_y += self.gravity #gravity pulling down
+        
+        
         if self.is_animating_RIGHT == True:
             self.current_sprite_R += 0.1 # how fast each frame
             
-            if self.current_sprite_R >= len(self.sprite_R):
-                self.current_sprite_R = 0
-                self.is_animating_RIGHT = False # when the list of images have all been displayed it stops 
+            if self.current_sprite_R >= len(self.sprite_R): # if its longer than sprites appended onto list
+                self.current_sprite_R = 0 # it resets to 0 
+                self.is_animating_RIGHT = False # when the list of images have all been displayed it stops until animating is True
             
             self.image = self.sprite_R[int(self.current_sprite_R)]
         
         if self.is_animating_UP == True:
             self.current_sprite_U += 0.1
+            
+            if self.current_sprite_U>= len(self.sprite_U): 
+                
+                self.current_sprite_U = 0 
+                self.is_animating_UP = False 
+            
+            self.image = self.sprite_U[int(self.current_sprite_U)]
+            
             
 
         if self.is_animating_LEFT == True:
@@ -265,71 +275,78 @@ class Player(pygame.sprite.Sprite):
 
             self.image = self.sprite_A[int(self.current_sprite_A)] 
         
-        self.gravity += 1
-        if self.gravity > 10:
-            self.gravity = 10
-        movement_y += self.gravity
+       
 
-        for tile in world.block_list:
-           
-            if tile[1].colliderect(self.rect.x + movement_x, self.rect.y, self.width, self.height):  #check for collision in x direction
-                movement_x = 0
-            
-            if tile[1].colliderect(self.rect.x, self.rect.y + movement_y, self.width, self.height):
-                movement_y = 0 #check for collision in y direction
+        
+        
+        
+        for block in level_1.block_list: # level_1 inherits data from level_1 group which includes block_list attribute
+             
+            if block[1].colliderect(self.rect.x, self.rect.y + movement_y, self.width, self.height):
+                movement_y = 0 
+                #print("collsion with block")
+               
                 
-                if self.gravity < 0:
-                    movement_y = tile[1].bottom - self.rect.top
-                    self.gravity = 1
-                
-                elif self.gravity >= 0:
-                    movement_y = tile[1].top - self.rect.bottom
-                    self.gravity = 0
+                if self.gravity >= 0:
+                    movement_y = block[1].top - self.rect.bottom #which are the blocks 
+                    self.gravity = 0 # Stays on block
+
+        
+
 
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT:
                     player.animate_RIGHT()
                     movement_x += 20
+                
+                
+                if event.key == pygame.K_RIGHT and event.key == pygame.K_UP:
+                    player.animate_UP()
+                    player.animate_RIGHT()
+                    movement_x -= 40
+                    movement_y -= 50
 
                 if event.key == pygame.K_LEFT:
                     player.animate_LEFT()
                     movement_x -= 20
 
-                if event.key == pygame.K_UP and self.jump == False:
-                     player.animate_UP()
-                     movement_y -= 20
-                     self.jump == True
-                
                 if event.key == pygame.K_UP:
-                    self.jump == False
+                        player.animate_UP()
+                        movement_y -= 50
+                
+                if event.key == pygame.K_LEFT and event.key == pygame.K_UP:
+                    player.animate_UP()
+                    player.animate_LEFT()
+                    movement_x += 40
+                    movement_y -= 50
 
                 if event.key == pygame.K_e:
                     player.animate_ATTACK()
+                    #player.damage = kill()
                     print("attack") 
-                     
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit
+                            
+            
      
      
-        self.rect.x += movement_x # updates both coordinates
-        self.rect.y += movement_y
+        self.rect.x += movement_x # adds on value to move
+        self.rect.y += movement_y  # adds on y value to move 
 
-        if self.rect.y > 700:
+        if self.rect.y > 700: # off platform through a gap
             self.rect.x = 40 
-            self.rect.y = 100
+            self.rect.y = 100 # player appears back at locations given
+            
     
     
-
-
 player_sprite = pygame.sprite.Group()
-player = Player(0,575)
-player_sprite.add(player)
+player = Player(0,575) # location x,y on player
+player_sprite.add(player) # add player onto player_group 
 
 
-
-# Coins
 
 start_back = pygame.transform.scale(pygame.image.load('start_back.png'),(SCREEN_WIDTH,SCREEN_HEIGHT))
 control_back = pygame.transform.scale(pygame.image.load('control.png'),(SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -340,12 +357,7 @@ Game_Over = font.render('Game Over',False,'white')
 Gameover_rect = Game_Over.get_rect(topleft = (300,240))
 
 
-menu = 1
-run_game = 2 
-control = 3
 
-
-lives = 3 
 
 score = font_Timer.render('score:',False,'white')
 score_rect = score.get_rect(bottomright = (790,590))
@@ -393,41 +405,51 @@ while menu != run_game:
                
                 
                 while run_game:
+                  
+                    
+                    
 
                     
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit
 
-                    points = 0
-                    points_surf = font_Timer.render(f'{points}', False , 'white')
-                    points_rect = points_surf.get_rect(bottomright = (850,590))
-                    
-                   
+                        
+                        
 
                     screen.blit(background,(0,0))
                     game_timer()
-                    world.draw()
+                    level_1.draw()
                     screen.blit(score,score_rect)
-                    screen.blit(points_surf,points_rect)
+                    
                     player_sprite.draw(screen)
                     
                     fireball_g.update()
                     fireball_g.draw(screen)
                     coin_group.draw(screen)
-                    player.movement(20)
-                    
-                   
-                    
-                 
-                    
-                    if pygame.sprite.spritecollide(player, coin_group, True):
-                        points = points + 1
-                        print(points)
-                       
-                        
+                    player.movement(20) # all of players movements and updates
                     
 
+                    if pygame.sprite.spritecollide(player, coin_group, True):
+                        points =  points + 1
+                        print(points)
+                        
+                        
+                        
+
+                    
+                    
+                    
+                    
+                    points_surf = font_Timer.render(f'{points}', False , 'white')
+                    points_rect = points_surf.get_rect(bottomright = (850,590))
+                    screen.blit(points_surf,points_rect)
+                    
+                        
+                    
+                    
+                        
+                
                     if lives ==  3:
                         screen.blit(heart_e,heart_rect)
                         screen.blit(heart_e2,heart_rect2)

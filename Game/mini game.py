@@ -85,11 +85,6 @@ heart_e3 = pygame.transform.scale(heart,(40,40))
 coin_image = pygame.image.load('coin.png').convert()
 coin_e = pygame.transform.scale(coin_image,(40,40))
 
-coins_rect = [
-    pygame.Rect(150,100,60,60),
-    pygame.Rect(50,100,60,60),
-    pygame.Rect(200,100,60,60)
-]
 
 
   
@@ -135,15 +130,18 @@ while run:
        
     
 
-    if game_start: # makes avatar smoother if i place if statement here???
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and player_rect.bottom >= 300: #to check if player is on ground
-                player_gravity = -15 # replaces value 0 to -15 to go up screen
-                player_rect.x += 10 # also adds to value x .... it doesnt crash with moevement to left 
-            if event.key == pygame.K_RIGHT:
-                player_rect.x += 10
-            if event.key == pygame.K_LEFT:
-                player_rect.x -= 10
+     
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_UP and player_rect.bottom >= 300: #to check if player is on ground
+            player_gravity = -15 # replaces value 0 to -15 to go up screen
+            player_rect.x += 10 # also adds to value x .... it doesnt crash with moevement to left
+            print("UP") 
+        if event.key == pygame.K_RIGHT:
+            player_rect.x += 10
+            print("Right")
+        if event.key == pygame.K_LEFT:
+            print("Left")
+            player_rect.x -= 10
 
         
             
