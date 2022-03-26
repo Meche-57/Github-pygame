@@ -13,14 +13,14 @@ window_height = 330
 window = pygame.display.set_mode((window_width,window_height))
 pygame.display.set_caption('Runner')
 
-def game_timer():
-    time = int(pygame.time.get_ticks()/1000) - start_time
-    time_surf = font.render(f'{time}', False,'white')
-    time_rect = time_surf.get_rect(topleft =(300,10))
-    window.blit(time_surf,time_rect)
-
-
 start_time = 0 
+player_gravity =  0
+points = 0   
+
+run = True
+game_over = False
+game_start = True
+
 
 
 # fonts 
@@ -32,6 +32,13 @@ font4 = pygame.font.Font(None, 40)
 
 
 
+def game_timer():
+    time = int(pygame.time.get_ticks()/1000) - start_time
+    time_surf = font.render(f'{time}', False,'white')
+    time_rect = time_surf.get_rect(topleft =(300,10))
+    window.blit(time_surf,time_rect)
+
+
 #surface                                                                             
 score = font.render('score:',False,'white')
 timer = font.render('Time:',False,'white')
@@ -40,7 +47,7 @@ play_again = font3.render('Play Again?',False,'white')
 no= font4.render('No',False,'dark blue')
 yes = font4.render('Yes(press space)',False,'dark green')
 fire = pygame.image.load('fire.png').convert_alpha()#removing alpha values and making the game run smoother as its easier for pygame to manage 
-player = pygame.image.load('player_0-1.png').convert_alpha()
+player = pygame.image.load('player_1.png').convert_alpha()
 cave = pygame.image.load('cave.png').convert()
 dirt = pygame.image.load('dirt2.png').convert()
 heart = pygame.image.load('heart.png').convert()
@@ -48,14 +55,6 @@ heart_2 = pygame.image.load('heart.png').convert()
 heart_3 = pygame.image.load('heart.png').convert()
 
 
-
-# not needed anymore as we are using rect to simplify
-#fire_x_pos = 525
-#fire_y_pos = 240
-player_x_pos = 10
-player_y_pos = 300
-player_width = 37
-player_height = 75
 
 # rectangle 
 
@@ -71,18 +70,17 @@ heart_rect = heart.get_rect(topleft=(400,10))
 heart_rect2 = heart.get_rect(topleft=(450,10))
 heart_rect3 = heart.get_rect(topleft=(500,10))
 
-heart_e = pygame.transform.scale(heart,(40,40))
+
+
+heart_e = pygame.transform.scale(heart,(40,40)) # modificaton on image size 
 heart_e2 = pygame.transform.scale(heart,(40,40))
 heart_e3 = pygame.transform.scale(heart,(40,40))
 
-player_gravity =  0
 
 
-run = True
-game_over = False
-game_start = True
 
 
+# coin position using [lists]
 
 coin_image = pygame.image.load('coin.png').convert()
 coin_e = pygame.transform.scale(coin_image,(40,40))
@@ -94,14 +92,14 @@ coins_rect = [
 ]
 
 
-points = 0     
+  
    
 
 while run:
 
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
+            if event.key == pygame.K_ESCAPE: # besides exit button you can utilize the esc key 
                 pygame.quit()
                 sys.exit()
         
@@ -110,15 +108,18 @@ while run:
             sys.exit()
         
         
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            print("RESETTED")
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE: # As an option in gameover is pressing the SPC key to reset
+            # All compenents in the level are redrawn (resetted) to 0 / original spawn place 
+                                                                    
             fire_rect.left = 600
             player_rect.left = 0
             
-            game_start = True
+            game_start = True # return to the main loop of game again 
             
-            start_time = int(pygame.time.get_ticks()/ 1000)
+            start_time = int(pygame.time.get_ticks()/ 1000) # /1000 to show only the seconds and minutes when increases ms show too
+            
             points = 0 
+
             coins_rect = [
             pygame.Rect(150,100,60,60),
             pygame.Rect(50,100,60,60),
@@ -126,8 +127,8 @@ while run:
             ]
 
 
-            for c in coins_rect: # for everY column / row in the list
-                window.blit(coin_e,(c[0],c[1]))
+            for c in coins_rect: 
+                window.blit(coin_e,(c[0],c[1])) # display coins 
     
             
 
@@ -137,8 +138,8 @@ while run:
     if game_start: # makes avatar smoother if i place if statement here???
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP and player_rect.bottom >= 300: #to check if player is on ground
-                player_gravity = -15 # jumping illusion
-                player_rect.x += 10
+                player_gravity = -15 # replaces value 0 to -15 to go up screen
+                player_rect.x += 10 # also adds to value x .... it doesnt crash with moevement to left 
             if event.key == pygame.K_RIGHT:
                 player_rect.x += 10
             if event.key == pygame.K_LEFT:
@@ -147,6 +148,7 @@ while run:
         
             
     if game_start:
+       
         window.blit(cave,(0,0))
         window.blit(dirt,(0,290))
         window.blit(score,score_rect)
@@ -155,22 +157,18 @@ while run:
         window.blit(heart_e,heart_rect)
         window.blit(heart_e2,heart_rect2)
         window.blit(heart_e3,heart_rect3)
+        game_timer()
 
-        coins_rect = [
+        coins_rect = [ 
             pygame.Rect(150,100,60,60),
             pygame.Rect(50,100,60,60),
             pygame.Rect(200,100,60,60)
-            ]
+            ]                                 # used a list to set multple coins and on where to place them 
             
-        for c in coins_rect: # for everY column / row in the list
-            window.blit(coin_e,(c[0],c[1]))
+        for c in coins_rect: # for every column / row in the list of coin_rect
+            window.blit(coin_e,(c[0],c[1])) # display on screen
     
-            
-
-    
-        
-        
-        #game_timer()
+              
         
         for c in coins_rect: # for ever column / row in the list
             window.blit(coin_e,(c[0],c[1]))
@@ -179,31 +177,32 @@ while run:
                 coins_rect.remove(c)
                 
                 
-                points = points + 1
+                points = points + 1 # when coin is collected points increment by one 
         
-        points_surf = font.render(f'{points}', False , 'white')
+        points_surf = font.render(f'{points}', False , 'white') # updates point 
         points_rect = points_surf.get_rect(topleft = (100, 10))
-        window.blit(points_surf,points_rect)
+        window.blit(points_surf,points_rect) #display points 
             
               
         
-        # fire 
-        fire_rect.left -= 2
-        if fire_rect.left <= -100:
-            fire_rect.left = 600 # is the screen
-        window.blit(fire,fire_rect)
+        # fireball
+        fire_rect.left -= 2 #moves the image -=2 speed 
+        if fire_rect.left <= -100: # if the rect goes off screen
+            fire_rect.left = 600 # returns to place 600
+        window.blit(fire,fire_rect) # displays on window
         
-        
-        player_gravity += 1  
+        # when player jumps it returns to platform level
+
+        player_gravity += 1  # when key pressed up pl
         player_rect.y += player_gravity
-        if player_rect.bottom >= 300:
-            player_rect.bottom = 300
-        window.blit(player,player_rect)
+        if player_rect.bottom >= 300: # when player x value exceeds 300 (which is ground) or equal to
+            player_rect.bottom = 300 # player x goes back to platform
+        window.blit(player,player_rect) # display player on window
         
-        #fire hits player
+        #collison with fireball
         
         if fire_rect.colliderect(player_rect):
-            game_start = False # game stops
+            game_start = False # player dies and its game over which forwards it onto else
         
         
     
