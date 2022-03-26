@@ -158,14 +158,11 @@ class Player(pygame.sprite.Sprite):
         self.is_animating_UP = True
         
 
-        
-        self.gravity = 0 # creates an attribute for gravity 
-        
-        
-        self.sprite_R = [] # Right list
-        self.sprite_L = [] # where images are going to appended and stored - LEFT
-        self.sprite_A = [] # Attack list
-        self.sprite_U = [] # attack list
+        self.gravity = 0 # creates an attribute for gravity
+
+
+      
+        self.sprite_U = [] # Up list
 
         self.sprite_U.append(pygame.image.load('player_0-4-1u.png'))
         self.sprite_U.append(pygame.image.load('player_0-4-2u.png'))
@@ -173,7 +170,9 @@ class Player(pygame.sprite.Sprite):
         self.sprite_U.append(pygame.image.load('player_0-4-4u.png'))
 
         self.current_sprite_U = 0
-        self.image = self.sprite_U[self.current_sprite_U] 
+        self.image = self.sprite_U[self.current_sprite_U] # self.image would be whatever index the image sprite it is at 
+
+        self.sprite_R = [] # Right list
 
         self.sprite_R.append(pygame.image.load('player_1-1.png'))
         self.sprite_R.append(pygame.image.load('player_1-2.png'))
@@ -183,6 +182,8 @@ class Player(pygame.sprite.Sprite):
         self.current_sprite_R = 0
         self.image = self.sprite_R[self.current_sprite_R]
 
+        self.sprite_L = [] # LEFT list
+
         self.sprite_L.append(pygame.image.load('player_0-1.png'))
         self.sprite_L.append(pygame.image.load('player_0-3.png'))
         self.sprite_L.append(pygame.image.load('player_0-1.png'))
@@ -191,6 +192,9 @@ class Player(pygame.sprite.Sprite):
         
         self.current_sprite_L = 0
         self.image = self.sprite_L[self.current_sprite_L]
+
+
+        self.sprite_A = [] # Attack list
 
         self.sprite_A.append(pygame.image.load('player_0-1a.png'))
         self.sprite_A.append(pygame.image.load('player_0-2a.png'))
