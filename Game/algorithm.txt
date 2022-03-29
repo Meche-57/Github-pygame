@@ -1,7 +1,3 @@
-self. jumped = false (prevent the player continues to press the space bar 
-sel. jumped == True (when the player has jumped)
-and to change back to false key(pygame.up) == False underneath 
-
 
 dx = change -5 
 and from there is added onto the self. rect 
@@ -9,20 +5,14 @@ and from there is added onto the self. rect
 dy += vel_y (would be increasing the same amount each time)
 
 self.rect.x += dx(same amount)  
-
 as jumping is a y coordinate factor we could use normal dy coordinate however it wouldn't result as a smooth jumping transition
-
 as when you jump 
 the y coordinate is at a higher speed and gravity is pulling down so we use a different variable for jumpin
 hence the reseason vel_y would be applied. the negative the value the higher up they coordinate goes as to
 pygame functions likewise 
 
-gravity 
 
-self.vel_y += 1 (increases the value y so player can go down)
-if self.vel_y > 10 
-self.val_y = 10 (normal ground value)
-dy += self.vel_y 
+respawn back to position:
 
 if self.rectbottom > 700 (off screen):
 self.rect.bottom = 40
@@ -30,28 +20,18 @@ self.rect.y = 100
 (respawn point)
 
 
-Player Movement:
-
-IF (keyboard_input == RIGHT) THEN
-	player movement = positive x (velocity)
-	Player.animate_RIGHT()
-
-IF (keyboard_input == LEFT) THEN
-	player movement = negative x (velocity)
-	Player.animate_LEFT()
-
-IF (keyboard_input == UP) THEN
-	player movement = positive y (velocity)
-	Player.animate_UP()
-	
-
-This code is used to store the player's movement using the x and y grid of the map. 
-What this algorithm is is adding the velocity in the direction assigned. After that, you want
-to set the movement and animation correct and make sense 
 
 
-player collision: 
 
-calculate player new position
-check collision at the new position set 
-adjust the player position
+
+
+gravity:
+
+self.gravity = 0
+
+self.gravity += 1 
+if self.gravity > 10 
+self.gravity = 10 
+moevemnt_y += self.gravity 
+
+

@@ -1,20 +1,43 @@
 
 import pygame
 import sys
+import time
 
+pygame.init()
 pygame.font.init()
 clock = pygame.time.Clock()
  
-
+# fonts used
 font = pygame.font.Font(None, 100)
 font_Timer= pygame.font.Font(None, 50)
 
+#Menu options 
 menu = 1
 run_game = 2 
 control = 3
+game_over = 4
+
 
 points = 0
 lives = 3 
+
+block_size = 50
+coin_size = 50
+fireball_size = 50
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 600
+screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))       
+background = pygame.transform.scale(pygame.image.load("cave.jpg"),(SCREEN_WIDTH,SCREEN_HEIGHT))
+heart = pygame.image.load('heart.png')
+heart_2 = pygame.image.load('heart.png')
+heart_3 = pygame.image.load('heart.png')
+heart_e = pygame.transform.scale(heart,(40,40))
+heart_e2 = pygame.transform.scale(heart_2,(40,40))
+heart_e3 = pygame.transform.scale(heart_3,(40,40))
+heart_rect = heart_e.get_rect(topleft=(0,10))
+heart_rect2 = heart_e2.get_rect(topleft=(50,10))
+heart_rect3 = heart_e3.get_rect(topleft=(100,10))
+
 
 # timer 
 
@@ -30,26 +53,7 @@ def game_timer():
     screen.blit(time_surf,time_rect)
 
 
-block_size = 50
-coin_size = 50
-fireball_size = 50
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 600
-screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))       
-background = pygame.transform.scale(pygame.image.load("cave.jpg"),(SCREEN_WIDTH,SCREEN_HEIGHT))
-
-
-heart = pygame.image.load('heart.png')
-heart_2 = pygame.image.load('heart.png')
-heart_3 = pygame.image.load('heart.png')
-heart_e = pygame.transform.scale(heart,(40,40))
-heart_e2 = pygame.transform.scale(heart_2,(40,40))
-heart_e3 = pygame.transform.scale(heart_3,(40,40))
-heart_rect = heart_e.get_rect(topleft=(0,10))
-heart_rect2 = heart_e2.get_rect(topleft=(50,10))
-heart_rect3 = heart_e3.get_rect(topleft=(100,10))
-
-
+# classes 
 
 class Coin(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -79,14 +83,14 @@ class Fireball(pygame.sprite.Sprite):
         self.rect.x += self.speed_l # makes fireball move to left
 
         if self.rect.x <= -450: # when fireball goes off grid 
-            print(self.rect.x) #shows location
+            
             self.rect.x = 2000 # respawns back to location 2000 which is at the far right 
 
          
 fireball_g = pygame.sprite.Group()
 
 
-level_data = [
+platform_layout = [
     '                        ', # 0
     '                        ', # 1
     '            C  C      E  ', # 2
@@ -103,11 +107,11 @@ level_data = [
 class Level():
     
 
-    def __init__(self, level_data):
+    def __init__(self, platform_layout):
         self.block_list = []
         
         row_count = 0 # location of row in block_list
-        for row in level_data:
+        for row in platform_layout:
             col_count = 0
             for object in row:
                 if object == 'C':
@@ -116,35 +120,32 @@ class Level():
                 
               
                 if object == 'B': 
-                    dirt_surf = pygame.image.load('dirt.png')
-                    dirt_rect = dirt_surf.get_rect()
-                    dirt_rect.x = col_count * block_size
-                    dirt_rect.y = row_count * block_size
-                    block = (dirt_surf, dirt_rect)
-                    self.block_list.append(block) 
+                    dirt_surf = pygame.image.load('dirt.png') # load the image which would be the surf
+                    dirt_rect = dirt_surf.get_rect() # rect is the images rect
 
-                    # if i added a class it would dissapear when the player collides with it so i created the block here
+                    dirt_rect.x = col_count * block_size # location of x 
+                    dirt_rect.y = row_count * block_size # location of y block
+                    block = (dirt_surf, dirt_rect) # bring both the rect and suf
+                    self.block_list.append(block) # appends into the empty list of blocks
+
+                    # if i added a class block it would dissapear when the player collides with it so i created the block variables here 
                 
                 if object == 'E':
                     fireball = Fireball(col_count * fireball_size, row_count * fireball_size) # block x,y corresponding to col and row value
-                    fireball_g.add(fireball)
+                    fireball_g.add(fireball) # add fireball to the group
 
 
-                col_count += 1 
-            row_count += 1 
+                col_count += 1 # goes through the column
+            row_count += 1  # goes through the row
 
-    def draw(self,):
+    def draw(self):
         
         for object in self.block_list:
-                screen.blit(object[0], object[1]) # draw the list onto screen 
+                screen.blit(object[0], object[1]) # draws the obkects onto screen 
                 
                 
 
-level_1 = Level(level_data) # platform set up is the surface and becomes the platform_data
-
-
-
-
+difficulty_1 = Level(platform_layout) 
 
 
 class Player(pygame.sprite.Sprite):
@@ -231,17 +232,14 @@ class Player(pygame.sprite.Sprite):
     
 
     def movement(self,speed):
-        movement_x = 0
-        movement_y = 0
+        movement_x_pos = 0 # set attributes and player movements would be added onto the x and y 
+        movement_y_pos = 0
         
-        self.gravity += 1
-        if self.gravity > 10:
-            self.gravity = 15
-        movement_y += self.gravity #gravity pulling down
+        
         
         
         if self.is_animating_RIGHT == True:
-            self.current_sprite_R += 0.1 # how fast each frame
+            self.current_sprite_R += 0.1 # how fast each frame is processed 
             
             if self.current_sprite_R >= len(self.sprite_R): # if its longer than sprites appended onto list
                 self.current_sprite_R = 0 # it resets to 0 
@@ -279,23 +277,23 @@ class Player(pygame.sprite.Sprite):
 
             self.image = self.sprite_A[int(self.current_sprite_A)] 
         
-       
-
+        self.gravity += 1 # gravity is always on 
+        movement_y_pos += self.gravity #movement_y_pos + gravity to pull down character when jump
+         
         
-        
-        
-        for block in level_1.block_list: # level_1 inherits data from level_1 group which includes block_list attribute
+        for block in difficulty_1.block_list: # difficulty_1 inherits data from difficulty_1 group which includes block_list attribute
              
-            if block[1].colliderect(self.rect.x, self.rect.y + movement_y, self.width, self.height):
-                movement_y = 0 
-                #print("collsion with block")
+            if block[1].colliderect(self.rect.x, self.rect.y + movement_y_pos, self.width, self.height):
+                movement_y_pos = 0
+               
                
                 
                 if self.gravity >= 0:
-                    movement_y = block[1].top - self.rect.bottom #which are the blocks 
-                    self.gravity = 0 # Stays on block
+                    movement_y_pos = block[1].top - self.rect.bottom #movement_y_pos which is updated with the top of the dirtblock - the bottom of player to keep the player on block
+                    self.gravity = 0 # as players.y is on block we make gravity 0 to show its on ground
+                    
 
-        
+        print(self.gravity)
 
 
         for event in pygame.event.get():
@@ -306,28 +304,28 @@ class Player(pygame.sprite.Sprite):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RIGHT:
                     player.animate_RIGHT()
-                    movement_x += 20
+                    movement_x_pos += 20
                 
                 
                 if event.key == pygame.K_RIGHT and event.key == pygame.K_UP:
                     player.animate_UP()
                     player.animate_RIGHT()
-                    movement_x -= 40
-                    movement_y -= 50
+                    movement_x_pos -= 40
+                    movement_y_pos -= 50
 
                 if event.key == pygame.K_LEFT:
                     player.animate_LEFT()
-                    movement_x -= 20
+                    movement_x_pos -= 20
 
                 if event.key == pygame.K_UP:
                         player.animate_UP()
-                        movement_y -= 50
+                        movement_y_pos -= 50
                 
                 if event.key == pygame.K_LEFT and event.key == pygame.K_UP:
                     player.animate_UP()
                     player.animate_LEFT()
-                    movement_x += 40
-                    movement_y -= 50
+                    movement_x_pos += 40
+                    movement_y_pos -= 50
 
                 if event.key == pygame.K_e:
                     player.animate_ATTACK()
@@ -337,8 +335,8 @@ class Player(pygame.sprite.Sprite):
             
      
      
-        self.rect.x += movement_x # adds on value to move
-        self.rect.y += movement_y  # adds on y value to move 
+        self.rect.x += movement_x_pos # adds on value to move
+        self.rect.y += movement_y_pos  # adds on y value to move 
 
         if self.rect.y > 700: # off platform through a gap
             self.rect.x = 40 
@@ -347,13 +345,14 @@ class Player(pygame.sprite.Sprite):
     
     
 player_sprite = pygame.sprite.Group()
-player = Player(0,575) # location x,y on player
-player_sprite.add(player) # add player onto player_group 
+player = Player(0,0) # location x,y constantly gets updated player such as gravity and platform collisions
+player_sprite.add(player) # add player data onto player_group 
 
 
+# Menu background and con
 
 start_back = pygame.transform.scale(pygame.image.load('start_back.png'),(SCREEN_WIDTH,SCREEN_HEIGHT))
-control_back = pygame.transform.scale(pygame.image.load('control.png'),(SCREEN_WIDTH,SCREEN_HEIGHT))
+control_info = pygame.transform.scale(pygame.image.load('control.png'),(SCREEN_WIDTH,SCREEN_HEIGHT))
 
 
 
@@ -366,9 +365,18 @@ Gameover_rect = Game_Over.get_rect(topleft = (300,240))
 score = font_Timer.render('score:',False,'white')
 score_rect = score.get_rect(bottomright = (790,590))
 
+    
+class game_status(): 
+    def __init__(self):
+        self.points = 0
+        self.timer = 0 
+    
+status = game_status()
+
+                    
 
 
-while menu != run_game:
+while menu != run_game :
 
     game_start = font.render('START GAME',False,'White')    #start Game displayed on window 
     game_start_rect= game_start.get_rect(topleft = (260,90))
@@ -383,119 +391,98 @@ while menu != run_game:
     Exit_rect = Control.get_rect(topleft = (260,370))
     
     screen.blit(Exit,Exit_rect)
-    
+
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit
+        
+                
                 
         if event.type ==  pygame.MOUSEBUTTONDOWN:
             mouse_pos = pygame.mouse.get_pos()
             if control_rect.collidepoint(mouse_pos):
                 menu == control
-                screen.blit(control_back,(0,0))  # will display the controls menu 
+                screen.blit(control_info,(0,0))  # will display the controls menu 
             
             if Exit_rect.collidepoint(mouse_pos):
                 menu == pygame.quit()             # when pressed the exit button the game closes 
         
             if game_start_rect.collidepoint(mouse_pos):
+        
+                start_timer = 0
                 menu == run_game
-                run_game = True                   # The run_game loop with start 
             
+                     # The run_game loop with start 
+        
+        
+   
+                 
+            while run_game == 2:
+                
+
+                screen.blit(background,(0,0))
+                game_timer()
+                difficulty_1.draw()
+                screen.blit(score,score_rect)
+
+                player_sprite.draw(screen)
+
+                fireball_g.update()
+                fireball_g.draw(screen)
+                coin_group.draw(screen)
+                player.movement(20) # all of players movements and updates
+
+                                    
+                            
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit
+                
+                
+
+
+                if pygame.sprite.spritecollide(player, coin_group, True):
+                    points =  points + 1
+                    print(points)
+                                    
+                
+                points_surf = font_Timer.render(f'{points}', False , 'white')
+                points_rect = points_surf.get_rect(bottomright = (850,590))
+                screen.blit(points_surf,points_rect)
+                
+                    
             
+                if lives ==  3:
+                    screen.blit(heart_e,heart_rect)
+                    screen.blit(heart_e2,heart_rect2)
+                    screen.blit(heart_e3,heart_rect3)
+
+
+
+                if pygame.sprite.spritecollide(player, fireball_g, True):
+                    lives = lives - 1
+                    
+
+
+                if lives == 2:
+                    screen.blit(heart_e2,heart_rect2)
+                    screen.blit(heart_e3,heart_rect3)
+
+                if lives == 1:
+                    screen.blit(heart_e3,heart_rect3)
+
+                if lives == 0:
+                   
+                    run_game == game_over()
                 
 
-               
-                
-                while run_game:
-                  
-                    
-                    
 
-                    
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                        sys.exit
-
-                        
-                        
-
-                    screen.blit(background,(0,0))
-                    game_timer()
-                    level_1.draw()
-                    screen.blit(score,score_rect)
-                    
-                    player_sprite.draw(screen)
-                    
-                    fireball_g.update()
-                    fireball_g.draw(screen)
-                    coin_group.draw(screen)
-                    player.movement(20) # all of players movements and updates
-                    
-
-                    if pygame.sprite.spritecollide(player, coin_group, True):
-                        points =  points + 1
-                        print(points)
-                        
-                        
-                        
-
-                    
-                    
-                    
-                    
-                    points_surf = font_Timer.render(f'{points}', False , 'white')
-                    points_rect = points_surf.get_rect(bottomright = (850,590))
-                    screen.blit(points_surf,points_rect)
-                    
-                        
-                    
-                    
-                        
-                
-                    if lives ==  3:
-                        screen.blit(heart_e,heart_rect)
-                        screen.blit(heart_e2,heart_rect2)
-                        screen.blit(heart_e3,heart_rect3)
-
-
-
-                    if pygame.sprite.spritecollide(player, fireball_g, True):
-                        lives = lives - 1
-                        
-
-
-                    if lives == 2:
-                        screen.blit(heart_e2,heart_rect2)
-                        screen.blit(heart_e3,heart_rect3)
-
-                    if lives == 1:
-                        screen.blit(heart_e3,heart_rect3)
-
-                    if lives == 0: 
-                        run_game = False
-
-                
-        
-
-
-        
-                    pygame.display.update()
-                    clock.tick(60)
-                
-                else:
-                    
-                    
-                    #game over screen soon
-      
-                    screen.fill('black')
-                
-                    screen.blit(Game_Over,Gameover_rect)
-                    
-
-        
-                
+                pygame.display.update()
+                clock.tick(60)
+                            
+            
         pygame.display.update()
-        
-    
+                
+            
